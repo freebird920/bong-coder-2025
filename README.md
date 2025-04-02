@@ -1,14 +1,17 @@
-# 봉우리코더 2025
+# [봉우리코더 2025](https://github.com/freebird920/bong-coder-2025)
   ![alt text](./markdown/poster.png)
 
 - [봉우리코더 2025](#봉우리코더-2025)
-  - [React 프로젝트 생성](#react-프로젝트-생성)
-  - [Cloudflare로 정적 페이지 배포](#cloudflare로-정적-페이지-배포)
-  - [React 프로젝트 구조 뜯어보기](#react-프로젝트-구조-뜯어보기)
-  - [index.html](#indexhtml)
+  - [1차시](#1차시)
+    - [React 프로젝트 생성](#react-프로젝트-생성)
+    - [Cloudflare로 정적 페이지 배포](#cloudflare로-정적-페이지-배포)
+    - [React 프로젝트 구조 뜯어보기](#react-프로젝트-구조-뜯어보기)
+    - [index.html](#indexhtml)
+    - [main.tsx](#maintsx)
 
+## 1차시
 
-## React 프로젝트 생성
+### React 프로젝트 생성
 
 1. vscode 실행
 2. [파일] - [폴더열기]로 프로젝트 폴더를 연다.
@@ -35,7 +38,9 @@
 8. [파일]-[폴더열기]로 방금 만든 프로젝트 폴더를 연다.
 
 
-## Cloudflare로 정적 페이지 배포
+
+
+### Cloudflare로 정적 페이지 배포
 ```bash
 https://dash.cloudflare.com/
 ```
@@ -50,7 +55,7 @@ https://dash.cloudflare.com/
 - <kbd>Save and Deploy</kbd>
 - 기다리면 됨. 근데 처음 하면 상당한 시간 기다려야 제대로 배포되는 듯 함. 아무튼 기다려보세요!
 
-## React 프로젝트 구조 뜯어보기
+### React 프로젝트 구조 뜯어보기
 - ./
   - node_modules
   - public
@@ -63,7 +68,7 @@ https://dash.cloudflare.com/
   - **index.html** 내 웹애플리케이션의 가장 상위에서 실행되는 파일입니다. `<meta>`태그 등은 여기에서 수정합니다.
   - package.json
 
-## index.html 
+### index.html 
 **index.html**파일을 열어보면 아래와 같은 코드가 입력되어 있습니다. 대충 살펴보겠습니다.
 ```html
 <!doctype html>
@@ -92,3 +97,55 @@ https://dash.cloudflare.com/
     <!-- After -->
         <title>천재들이 다니는 명문 울산중앙중학교에서 제일 가는 리액트 프로그래밍 프로그램(엔트리봇 없음)을 남몰래 수강하는 비밀 프로그래머가 되었습니다.</title>
     ```
+
+### main.tsx 
+```tsx
+import { StrictMode } from 'react'
+import { createRoot } from 'react-dom/client'
+import './index.css'
+import App from './App.tsx'
+
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>
+    <App />
+  </StrictMode>,
+)
+```
+
+- `import` 문
+  ```tsx
+    import { StrictMode } from 'react'
+    import { createRoot } from 'react-dom/client'
+    import './index.css'
+    import App from './App.tsx'
+  ```
+  - React 라이브러리
+  - css
+  - React 컴포넌트(`App.tsx`)
+  - 등을 불러 오는 구문
+- `createRoot()` 함수
+  ```tsx
+  createRoot(document.getElementById('root')!)
+  ```
+  - `crateRoot()`는 React 애플리케이션을 DOM(Document Object Model)에 마운트 하기 위한 루트 컨테이너를 새롭게 생성하는 함수
+  - 쉽게 말해서 React로 만든거 렌더링할 컨테이너 설정하는 거라고 보면 됨
+  - 그럼 그 `root`는 어디에? 아까 봤던 `index.html`의 `<body>`태그 안에 `<div id="root"></div>` 여기에 있음!! 
+    ```html
+      <body>
+        <div id="root"></div>
+        <script type="module" src="/src/main.tsx"></script>
+      </body>
+    ```
+  - `document.getElementById('root')` 이게 바로 `id`가 `root`인 요소란 뜻임.
+  - 해석하면 React 애플리케이션 만들어 넣을 박스 지정할건데 이 박스는 `id`가 `root`인 html 요소로 할거다! 라는 뜻
+  - `.render()`함수는 createRoot로 만들어지는 객체에 내장된 함수로 안에 들어 있는 ReactComponent를 렌더링 하는 함수임.
+    ```tsx
+    createRoot(document.getElementById('root')!).render(
+      <StrictMode>
+        <App />
+      </StrictMode>,
+    )
+    ```
+- 정리하면 `main.tsx`는
+  - `import`문을 통해 필요한 외부 파일을 불러오고
+  - `createRoot()`로 리액트 요소를 렌더링할 `root`컨테이너를 만들고 이 `root`에 내장된 `render()`함수로 렌더링할 리액트 컴포넌트를 지정해줌.
