@@ -8,6 +8,7 @@
     - [React 프로젝트 구조 뜯어보기](#react-프로젝트-구조-뜯어보기)
     - [index.html](#indexhtml)
     - [main.tsx](#maintsx)
+    - [실습 기본 세팅](#실습-기본-세팅)
 
 ## 1차시
 
@@ -149,3 +150,15 @@ createRoot(document.getElementById('root')!).render(
 - 정리하면 `main.tsx`는
   - `import`문을 통해 필요한 외부 파일을 불러오고
   - `createRoot()`로 리액트 요소를 렌더링할 `root`컨테이너를 만들고 이 `root`에 내장된 `render()`함수로 렌더링할 리액트 컴포넌트를 지정해줌.
+
+### 실습 기본 세팅
+- `App.css` 파일 삭제
+- `index.css` 파일은 두고 안에 내용만 싹 다 지워
+- `App.tsx`는 아래와 같이 씀
+  ```tsx
+  const App = ()=>{
+    return (
+      <></>
+    )
+  }
+  ```
