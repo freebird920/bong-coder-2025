@@ -11,8 +11,8 @@ const App = () => {
   const initPixi = useCallback(async () => {
     if (!canvasDivRef.current) return;
     await pixiApp.init({
-      resizeTo: window,
-      background: "#1099bb",
+      resizeTo: canvasDivRef.current,
+      background: "#F0F0F0",
     });
 
     canvasDivRef.current.appendChild(pixiApp.canvas);

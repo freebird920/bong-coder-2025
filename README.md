@@ -16,7 +16,7 @@
     - [Pixi.js](#pixijs)
       - [Pixi.js란?](#pixijs란)
       - [설치와 세팅](#설치와-세팅)
-      - [](#)
+      - [기본적인 렌더링 하기](#기본적인-렌더링-하기)
 
 ## 1차시
 
@@ -239,7 +239,7 @@ createRoot(document.getElementById('root')!).render(
 - `./src/main.tsx`에서 `StrictMode` 끄기
   React.js의 `StrictMode`는 `useEffect` 훅과 같이 sideeffect가 발생할 수 있는 메서드를 두 번 호출하기 때문에 여기에서는 끄고 사용한다.
   <kbd>ctrl</kbd> + <kbd>/</kbd>를 이용해서 아래와 같이 `StrictMode`와 관련된 부분은 주석처리 한다. (지워도 됨)
-  ```tsx
+  ```jsx
   // ./src/main.tsx
 
   // import { StrictMode } from "react";
@@ -254,4 +254,79 @@ createRoot(document.getElementById('root')!).render(
   );
   ```
 
-#### 
+#### 기본적인 렌더링 하기
+- `./src/App.tsx` 뼈대 만들기
+  ```jsx
+  // ./src/App.tsx
+  import {useRef} from "react";
+  const App = ()=>{
+    const canvasDivRef = useRef<HTMLDivElement>(null);
+    return (
+      <>
+        <div ref={canvasDivRef}></div>
+      </>
+      )
+  }
+  export default App;
+  ```
+  -   `useRef` 훅을 이용해서 `canvasDivRef`라는 이름의 `<div>` ref를 만든다. 
+  - `<div ref={canvasDivRef}></div>`와 같이 참조할 `<div>` 태그에 `ref={canvasDivRef}` 위에서 만든 `useRef` 이름을 붙여준다.
+
+
+- `useMemo` 훅 활용하기
+  ```jsx
+  // ./src/App.tsx
+  import {useRef, useMemo} from "react";
+  import * as PixiJs from "pixi.js";
+
+  const App = ()=>{
+    const canvasDivRef = useRef<HTMLDivElement>(null);
+    const pixiApp = useMemo(() => new PixiJs.Application(), []);
+
+    return (
+      <>
+        <div ref={canvasDivRef}></div>
+      </>
+      )
+  }
+  export default App;
+  ```
+  - React는 컴포넌트가 리렌더링 될 때마다(그러니까 화면이 업데이트 될 때 마다) 컴포넌트 함수(여기서는 `App()`)를 매 번 실행함.
+  - 그래서 `App()` 안에 있는 모든 함수도 매 렌더링 마다 실행됨. 
+  - `useMemo`는 React에서 제공하는 훅 중 하나로, 비싼 계산을 캐싱(메모이제이션)하여 성능 최적화를 도와주는 역할을 합니다. 컴포넌트가 렌더링될 때마다 반복되는 복잡한 연산을 매번 실행하는 대신, 의존성 배열에 명시된 값들이 변경되지 않으면 이전에 계산된 결과를 재사용합니다.
+  - 그냥 대충 `useMemo`안에 있으면 리렌더링 되더라도 이전 값 기억한다는 뜻.
+  - 여기에서는 컴포넌트가 리렌더링될 때마다 Pixi.js Application 인스턴스가 재생성되는 것을 방지하기 위해서 사용됨.
+
+- `useCallback()` 훅으로 canvas 초기화 함수 만들기
+  ```jsx
+  const initPixi = useCallback(
+    // useCallback에 저장하여 싱행할 함수
+    async ()=>{ // async를 써서 비동기 함수로 만든다.
+
+      // 1. canvasDivRef.current에 대한 null 체크
+      if (!canvasDivRef.current) return; // canvasDivRef.current는 null일 수도 있으므로, null이 아님을 확실하게 체크하기 위한 if문을 작성한다. null 일 경우 함수 바로 종료함
+
+      // 2. pixiApp.init()
+      // pixiApp을 초기화 하는 함수
+      // 함수의 파라미터로 초기화 옵션 객체를 넣는다.
+      await pixiApp.init( // await를 사용해서 비동기 함수의 동작이 끝나면 다음줄을 실행하도록 한다.
+        // 초기화 옵션 객체 
+        {
+          resizeTo: canvasDivRef.current, // canvasDivRef 사이즈로 사이즈 지정한다는 뜻.
+          background: "#F0F0F0", // 희끄무리한 회색으로 배경 색깔 지정한다는 뜻
+        }
+        // 초기화 옵션 객체 끝
+      ); // await pixiApp.init() 끝.
+
+      // 3. canvasDivRef 안에 canvas 삽입하기 
+      canvasDivRef.current.appendChild(pixiApp.canvas);
+      // canvasDivRef.current <= return()에 있는 <div ref={canvasDivRef}>
+      // .appendChild(pixiApp.canvas)는
+      // <div ref={canvasDivRef}>pixiApp.canvas</div> 이렇게 만든다는 뜻.
+
+    }, 
+    // useCallback의 의존성 배열 부분
+    [pixiApp] // pixiApp 이라는 값이 변경되면 이 함수는 다시 만들어짐
+    )
+  ```
+  - `useCallback()`은  `useMemo()`와 비슷한 개념이다. `App()` 함수가 실행되어 렌더링 될 때마다 `App()` 안에 있는 함수도 새롭게 생성되는데, `useCallback()`은 이러한 불필요한 생성을 막는 훅이다.
