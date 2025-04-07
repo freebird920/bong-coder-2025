@@ -9,9 +9,13 @@
     - [index.html](#indexhtml)
     - [main.tsx](#maintsx)
     - [실습 기본 세팅](#실습-기본-세팅)
-  - [Pixi.js](#pixijs)
-    - [외부 라이브러리](#외부-라이브러리)
-    - [Pixi.js란?](#pixijs란)
+  - [외부 라이브러리 활용하기](#외부-라이브러리-활용하기)
+    - [외부 라이브러리란?](#외부-라이브러리란)
+    - [tailwindcss](#tailwindcss)
+      - [설치법](#설치법)
+    - [Pixi.js](#pixijs)
+      - [Pixi.js란?](#pixijs란)
+      - [설치와 세팅](#설치와-세팅)
 
 ## 1차시
 
@@ -167,14 +171,65 @@ createRoot(document.getElementById('root')!).render(
   ```
 
 
+## 외부 라이브러리 활용하기
 
-## Pixi.js 
-
-### 외부 라이브러리
+### 외부 라이브러리란?
 - Javascript(또는 Typescript)의 외부 library는 다른 사람이 만든 일종의 코드 묶음과 같은 개념이다. 복잡하거나 자주 쓰는 기능들을 누군가가 잘 만들어 놓았다면 그 코드 또는 기능을 어디선가 받아와서 쓰는 개념이다. 
 - 우리가 지금 사용하는 react.js도 일종의 외부 라이브러리이다. react.js와 같이 애플리케이션의 기본적인 뼈대를 만드는 라이브러리를 **프레임워크**라고 부른다.
 
-### Pixi.js란?
+### tailwindcss
+- tailwindcss는 css 유틸리티클래스로 직접 css나 html 태그의 `style` 속성을 건드리는 대신 `tailwindcss`가 미리 정의 해둔 html 태그의 `class`(typescript는 `classname`)를 이용해 스타일을 편집할 수 있도록 하는 css 유틸리티 클래스 라이브러리 
+- css `style`과 tailwindcss `class` 사용법 비교
+  - style
+    ```tsx
+    const App = ()=>{
+      return (
+        <div style={{color: "red"}}>스타일<div/>
+      )
+    }
+    export default App;
+    ```
+  - tailwind
+    ```tsx
+    const App = ()=>{
+      return (
+        <div className="text-red-500">스타일<div/>
+      )
+    }
+    export default App;
+    ```
+
+#### 설치법
+
+- terminal에 아래 문구 입력하여 설치
+  ```bash
+  npm install tailwindcss @tailwindcss/vite
+  ```
+- `./vite.config.ts` 파일의 내용을 아래 내용으로 변경
+  ```bash
+  import { defineConfig } from "vite";
+  import react from "@vitejs/plugin-react-swc";
+  import tailwindcss from "@tailwindcss/vite";
+
+  // https://vite.dev/config/
+  export default defineConfig({
+    plugins: [react(), tailwindcss()],
+  });
+  ```
+- `./src/index.css` 가장 윗 줄에 아래 문구 추가
+  ```css
+  @import "tailwindcss";
+  ```
+
+### Pixi.js 
+
+#### Pixi.js란?
 - javascript 2D 그래픽 라이브러리.
 - html의 `<canvas>`와 바닐라 javascript로 까다롭게 구현해야 하는 그래픽 구현을 편리하게 구현할 수 있도록 도와준다.
 - 기본적으로 WebGL을 사용하여 GPU 가속을 활용, 빠르고 효율적인 렌더링을 제공한다.
+
+#### 설치와 세팅
+- 설치 스크립트
+  ```bash
+  npm install pixi.js
+  ```
