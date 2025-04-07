@@ -16,6 +16,7 @@
     - [Pixi.js](#pixijs)
       - [Pixi.js란?](#pixijs란)
       - [설치와 세팅](#설치와-세팅)
+      - [](#)
 
 ## 1차시
 
@@ -233,3 +234,24 @@ createRoot(document.getElementById('root')!).render(
   ```bash
   npm install pixi.js
   ```
+
+
+- `./src/main.tsx`에서 `StrictMode` 끄기
+  React.js의 `StrictMode`는 `useEffect` 훅과 같이 sideeffect가 발생할 수 있는 메서드를 두 번 호출하기 때문에 여기에서는 끄고 사용한다.
+  <kbd>ctrl</kbd> + <kbd>/</kbd>를 이용해서 아래와 같이 `StrictMode`와 관련된 부분은 주석처리 한다. (지워도 됨)
+  ```tsx
+  // ./src/main.tsx
+
+  // import { StrictMode } from "react";
+  import { createRoot } from "react-dom/client";
+  import "./index.css";
+  import App from "./App.tsx";
+
+  createRoot(document.getElementById("root")!).render(
+    // <StrictMode>
+    <App />
+    // </StrictMode>,
+  );
+  ```
+
+#### 
