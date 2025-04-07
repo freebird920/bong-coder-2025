@@ -9,6 +9,9 @@
     - [index.html](#indexhtml)
     - [main.tsx](#maintsx)
     - [실습 기본 세팅](#실습-기본-세팅)
+  - [Pixi.js](#pixijs)
+    - [외부 라이브러리](#외부-라이브러리)
+    - [Pixi.js란?](#pixijs란)
 
 ## 1차시
 
@@ -162,3 +165,16 @@ createRoot(document.getElementById('root')!).render(
     )
   }
   ```
+
+
+
+## Pixi.js 
+
+### 외부 라이브러리
+- Javascript(또는 Typescript)의 외부 library는 다른 사람이 만든 일종의 코드 묶음과 같은 개념이다. 복잡하거나 자주 쓰는 기능들을 누군가가 잘 만들어 놓았다면 그 코드 또는 기능을 어디선가 받아와서 쓰는 개념이다. 
+- 우리가 지금 사용하는 react.js도 일종의 외부 라이브러리이다. react.js와 같이 애플리케이션의 기본적인 뼈대를 만드는 라이브러리를 **프레임워크**라고 부른다.
+
+### Pixi.js란?
+- javascript 2D 그래픽 라이브러리.
+- html의 `<canvas>`와 바닐라 javascript로 까다롭게 구현해야 하는 그래픽 구현을 편리하게 구현할 수 있도록 도와준다.
+- 기본적으로 WebGL을 사용하여 GPU 가속을 활용, 빠르고 효율적인 렌더링을 제공한다.
