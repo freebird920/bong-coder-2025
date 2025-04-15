@@ -21,51 +21,8 @@ const App = () => {
     pixiApp.stage.sortableChildren = true;
 
     canvasDivRef.current.appendChild(pixiApp.canvas);
-
-    const rectOne = new PixiJs.Graphics();
-    rectOne.rect(0, 0, 200, 200);
-    rectOne.fill(0xff0000);
-    rectsRef.current.push(rectOne);
-    const rectTwo = new PixiJs.Graphics()
-      .rect(200, 200, 200, 200)
-      .fill(0x00ff00);
-    rectsRef.current.push(rectTwo);
-
-    rectOne.on("pointertap", () => {
-      alert("오 눌렸읍니다?!");
-    });
-    // setRectsRef([...rectsState, ]);
-
-    rectOne.eventMode = "dynamic";
-    rectTwo.on("pointertap", () => {
-      alert("오 Wkddlspdyd눌렸읍니다?!");
-    });
-    rectTwo.eventMode = "dynamic";
-
-    pixiApp.stage.addChild(rectOne, rectTwo);
-    setForceRender({});
-    // // Load the bunny texture.
-    // const texture = await PixiJs.Assets.load(
-    //   "https://pixijs.com/assets/bunny.png"
-    // );
-
-    // // Create a new Sprite from an image path
-    // const bunny = new PixiJs.Sprite(texture);
-
-    // // Center the sprite's anchor point
-    // bunny.anchor.set(0.5);
-
-    // // Move the sprite to the center of the screen
-    // bunny.x = pixiApp.screen.width / 2;
-    // bunny.y = pixiApp.screen.height / 2;
-    // // Add to stage
-    // pixiApp.ticker.add((time) => {
-    //   bunny.rotation += 0.001 * time.deltaTime;
-    // });
-    // pixiApp.stage.addChild(bunny);
-
-    // eslint 삭제(rectsState를 의존성 배열에 넣으라는 메시지를 비활성화)
   }, [pixiApp]);
+
   const getSecureRandomNumber = useCallback((max: number) => {
     // 32비트 정수 하나를 저장할 배열 생성
     const array = new Uint32Array(1);
@@ -78,13 +35,14 @@ const App = () => {
   }, []);
   const addRect = useCallback(() => {
     const rect = new PixiJs.Graphics()
-      .rect(
-        getSecureRandomNumber(800),
-        getSecureRandomNumber(600),
-        getSecureRandomNumber(255),
-        getSecureRandomNumber(255)
-      )
+      .rect(0, 0, getSecureRandomNumber(255), getSecureRandomNumber(255))
       .fill(getSecureRandomNumber(0xffffff));
+    rect.x = getSecureRandomNumber(800);
+    rect.y = getSecureRandomNumber(600);
+    rect.label = `${pixiApp.stage.children.length}`;
+    rect.on("pointertap", () => {
+      console.log(rect.label, rect.x, rect.y);
+    });
     rect.eventMode = "dynamic";
     rectsRef.current.push(rect);
     setForceRender({});
@@ -135,11 +93,24 @@ const App = () => {
       <section className="select-none">
         <h3>사각형 선택창</h3>
         <form></form>
+        <button
+          className="border-2 rounded-md p-2"
+          onClick={() => {
+            // console.log(pixiApp.stage.children);
+
+            // 또는 각 객체를 하나씩 확인하려면
+            pixiApp.stage.children.forEach((child, index) => {
+              console.log(`child ${index}:`, child.x, child.y);
+            });
+          }}
+        >
+          눌리면 객체 확인하는 ㅂㅌ
+        </button>
         <button className="border-2 rounded-md p-2" onClick={addRect}>
           눌리면 사각형 새로 생기는 ㅂㅌ입니다?!
         </button>
         <ul className="space-y-2">
-          {rectsRef.current.map((_, index) => {
+          {pixiApp.stage.children.map((_, index) => {
             return (
               <li
                 className={`${
