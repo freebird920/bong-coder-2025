@@ -1,15 +1,24 @@
-import { useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
+import {
+  CSSProperties,
+  useCallback,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import * as PixiJs from "pixi.js";
 const App = () => {
   // useRef()
   const canvasDivRef = useRef<HTMLDivElement>(null);
-  const rectsRef = useRef<PixiJs.Graphics[]>([]);
   // useState
   const [, setForceRender] = useState({});
-  const [rectIndex, setRectIndex] = useState(0);
-
+  const [rectSelect, setRectSelect] = useState(0);
+  const [rectIndex, setRectIndex] = useState<number>(0);
   // useMemo()
   const pixiApp = useMemo(() => new PixiJs.Application(), []);
+  const canvasDivStyle = useMemo<CSSProperties>(() => {
+    return { width: 800, height: 600 };
+  }, []);
 
   // useCallback
   const initPixi = useCallback(async () => {
@@ -34,47 +43,53 @@ const App = () => {
     return Math.floor(fraction * (max + 1));
   }, []);
   const addRect = useCallback(() => {
+    //
     const rect = new PixiJs.Graphics()
       .rect(0, 0, getSecureRandomNumber(255), getSecureRandomNumber(255))
       .fill(getSecureRandomNumber(0xffffff));
     rect.x = getSecureRandomNumber(800);
     rect.y = getSecureRandomNumber(600);
-    rect.label = `${pixiApp.stage.children.length}`;
+
+    rect.label = rectIndex.toString();
+    setRectIndex((prev) => prev + 1);
     rect.on("pointertap", () => {
       console.log(rect.label, rect.x, rect.y);
     });
     rect.eventMode = "dynamic";
-    rectsRef.current.push(rect);
     setForceRender({});
     pixiApp.stage.addChild(rect);
-  }, [pixiApp.stage, getSecureRandomNumber]);
+  }, [pixiApp.stage, getSecureRandomNumber, rectIndex]);
+
   // useLayoutEffect
   useLayoutEffect(() => {
     initPixi();
   }, [initPixi]);
-  // 키보드 이벤트 핸들러 추가: 화살표 키에 따라서 rectOne 이동
+
+  // 키보드 이벤트 핸들러 추가: 화살표 키에 따라서 이동
   useLayoutEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      // 사각형이 아직 생성되지 않았다면 무시
-      if (rectsRef.current.length === 0) return;
+      // selectedRect 설정(label로 찾기)
+      const selectedRect = pixiApp.stage.getChildByLabel(rectSelect.toString());
+      if (!selectedRect) return;
       // 한 번의 키 입력마다 이동할 픽셀 양
       const speed = 10;
+
       switch (event.key) {
         case "ArrowUp":
           event.preventDefault();
-          rectsRef.current[rectIndex].y -= speed;
+          selectedRect.y -= speed;
           break;
         case "ArrowDown":
           event.preventDefault();
-          rectsRef.current[rectIndex].y += speed;
+          selectedRect.y += speed;
           break;
         case "ArrowLeft":
           event.preventDefault();
-          rectsRef.current[rectIndex].x -= speed;
+          selectedRect.x -= speed;
           break;
         case "ArrowRight":
           event.preventDefault();
-          rectsRef.current[rectIndex].x += speed;
+          selectedRect.x += speed;
           break;
         default:
           break;
@@ -85,14 +100,15 @@ const App = () => {
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [rectsRef, rectIndex]);
+  }, [rectSelect, pixiApp.stage]);
   return (
     <>
       <h2>Pixi.js 연습하기</h2>
-      <div className="w-[800px] h-[600px]" ref={canvasDivRef}></div>
+      <div style={canvasDivStyle} ref={canvasDivRef}></div>
       <section className="select-none">
         <h3>사각형 선택창</h3>
         <form></form>
+        <p>{rectIndex}</p>
         <button
           className="border-2 rounded-md p-2"
           onClick={() => {
@@ -114,11 +130,11 @@ const App = () => {
             return (
               <li
                 className={`${
-                  index === rectIndex ? "font-bold bg-amber-500/20" : ""
+                  index === rectSelect ? "font-bold bg-amber-500/20" : ""
                 } border-2 rounded-md p-2 text-center`}
                 key={`rect-ref-${index}`}
                 onClick={() => {
-                  setRectIndex(index);
+                  setRectSelect(index);
                 }}
               >
                 {index}

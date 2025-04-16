@@ -17,6 +17,8 @@
       - [Pixi.js란?](#pixijs란)
       - [설치와 세팅](#설치와-세팅)
       - [기본적인 렌더링 하기](#기본적인-렌더링-하기)
+      - [사각형 추가하는 함수 만들기](#사각형-추가하는-함수-만들기)
+      - [`PixiJs.Application` 클래스를 활용하여 사각형 움직이기](#pixijsapplication-클래스를-활용하여-사각형-움직이기)
 
 ## 1차시
 
@@ -281,11 +283,15 @@ createRoot(document.getElementById('root')!).render(
 
   const App = ()=>{
     const canvasDivRef = useRef<HTMLDivElement>(null);
+    // pixiJs의 Application 객체를 메모이제이션 한다.
     const pixiApp = useMemo(() => new PixiJs.Application(), []);
-
+    // useMemo를 사용하여 canvasDiv의 style을 메모이제이션한다.
+    const canvasDivStyle = useMemo<CSSProperties>(() => {
+      return { width: 800, height: 600 };
+    }, []);
     return (
       <>
-        <div ref={canvasDivRef}></div>
+        <div ref={canvasDivRef} style={canvasDivStyle}></div>
       </>
       )
   }
@@ -330,3 +336,43 @@ createRoot(document.getElementById('root')!).render(
     )
   ```
   - `useCallback()`은  `useMemo()`와 비슷한 개념이다. `App()` 함수가 실행되어 렌더링 될 때마다 `App()` 안에 있는 함수도 새롭게 생성되는데, `useCallback()`은 이러한 불필요한 생성을 막는 훅이다.
+
+- useLayoutEffect 사용하기
+  - useLayoutEffect의 콜백 함수는 React가 DOM 업데이트를 마친 직후, 브라우저가 화면을 갱신하기 전에 실행된다.(즉 화면 띄우고 처리함) **useEffct**는 일단 화면 한 번 띄우고 처리한다는 차이가 있음.
+  - 
+    ```tsx
+    // useLayoutEffect
+    useLayoutEffect(() => {
+      initPixi();
+    }, [initPixi]);
+    ```
+
+#### 사각형 추가하는 함수 만들기
+- `useCallback` 훅 활용하여 `addRect()`함수 만들기
+- `pixi.Js.Graphics` 클래스 사용법
+  ```tsx
+  // 만들 rect를 설정하는 변수
+  const width:number = 100;
+  const height:number = 100;
+  const color:number = 0xff0000; // 빨간색 
+
+  // pixi.Js.Graphics 클래스 생성
+  const rect = new PixiJs.Graphics()
+    .rect(0, 0, width, height) // 사각형을 만드는 메서드 rect(x, y, width, height)
+    .fill(color); // 색칠하는 메서드 fill(color<number>)
+  
+  // 좌표 설정
+  rect.x = 100; // rect의 x 좌표
+  rect.y = 100; // rect의 y 좌표
+
+  // label 추가
+  rect.label = "myRect"; // rect를 식별할 수 있는 label 추가 
+
+  // stage에 만든 객체 추가.
+  pixiApp.stage.addChild(rect);
+  ```
+- **연습문제** `useCallback()` 훅을 사용하여 사각형을 만드는 **(가)** <u>addRect() 함수를 완성하시오</u> **(나)** <u>addRect() 함수를 실행하는 버튼을 만드시오.</u>
+- **심화문제** *연습문제*에서 완성한 함수와 `useState()` 훅을 응용하여 `rectIndex` state(number 타입 state, 초기값을 0으로 설정)를 만들고 label을 현재 `rectIndex`로 설정한 다음 rectIndex를 1 증가 시키는 `addRect()` 함수를 완성하시오.
+#### `PixiJs.Application` 클래스를 활용하여 사각형 움직이기
+- 위 연습문제에서 만든 사각형을 움직여 보겠다. 
+- 
