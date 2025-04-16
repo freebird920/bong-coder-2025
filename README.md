@@ -375,4 +375,11 @@ createRoot(document.getElementById('root')!).render(
 - **심화문제** *연습문제*에서 완성한 함수와 `useState()` 훅을 응용하여 `rectIndex` state(number 타입 state, 초기값을 0으로 설정)를 만들고 label을 현재 `rectIndex`로 설정한 다음 rectIndex를 1 증가 시키는 `addRect()` 함수를 완성하시오.
 #### `PixiJs.Application` 클래스를 활용하여 사각형 움직이기
 - 위 연습문제에서 만든 사각형을 움직여 보겠다. 
-- 
+- `pixiApp.stage.getChildByLabel()`을 활용하여 사각형 참조 얻기.
+  ```tsx
+  const rectRef = pixiApp.stage.getChildByLabel("라벨이름"); // rectRef에 "라벨이름"이라는 라벨을 가진 사각형의 참조를 저장한다.
+  ```
+- `rectRef` 참조를 이용해 좌표 변경하기
+  ```tsx
+  
+  ```
