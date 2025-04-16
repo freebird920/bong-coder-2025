@@ -381,5 +381,14 @@ createRoot(document.getElementById('root')!).render(
   ```
 - `rectRef` 참조를 이용해 좌표 변경하기
   ```tsx
+  const rate:number = 10 // 한 번에 움직일 픽셀 정의 
+  const rectRef = pixiApp.stage.getChildByLabel("라벨이름"); 
   
+  // 좌표 이동
+  rectRef.x = rectRef.x + rate;
+  rectRef.y += rate; // 왼쪽에 있는 변수 값에 오른쪽에 있는 값을 더한 다음에 왼쪽 변수에 저장한다는 뜻, 즉 위와 동일한 의미이다.  
   ```
+- **연습문제** `useCallback()` 훅을 이용하여 아래 조건에 따라 `moveRect(label:string, x:number, y:number)` 함수를 완성하시오.
+  - *조건1.* 함수의 **파라미터**는 `label:string`, `x:number`, `y:number`로 *label*은 이동시킬 사각형의 label, *x*는 x축으로 이동할 픽셀 수, *y*는 y축으로 이동할 픽셀 수를 의미한다.
+  - *조건2.* `pixiApp.stage.getChildByLabel(label)`에서 label을 찾지 못할 경우 null 또는 undefine,false 값을 반환한다. 이 경우 `console.log()`로 오류 메시지를 콘솔 창에 띄우고, 함수를 즉시 `return`하는 로직을 추가하시오.
+- **심화문제** `pixiApp.stage.children`은 stage에 있는 child를 담고 있는 배열이다. *연습문제*에서 만든 `moveRect()` 함수와 `Array.forEach()`구문을 활용하여 `console.log()`로 각 child의 label을 콘솔에 출력한 다음, *x축*으로 `10px`씩 이동 시키시오.

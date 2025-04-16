@@ -126,7 +126,7 @@ const App = () => {
           눌리면 사각형 새로 생기는 ㅂㅌ입니다?!
         </button>
         <ul className="space-y-2">
-          {pixiApp.stage.children.map((_, index) => {
+          {pixiApp.stage.children.map((child, index) => {
             return (
               <li
                 className={`${
@@ -137,7 +137,7 @@ const App = () => {
                   setRectSelect(index);
                 }}
               >
-                {index}
+                {child.label}
               </li>
             );
           })}
