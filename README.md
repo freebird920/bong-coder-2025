@@ -21,6 +21,7 @@
       - [기본적인 렌더링 하기](#기본적인-렌더링-하기)
       - [사각형 추가하는 함수 만들기](#사각형-추가하는-함수-만들기)
       - [`PixiJs.Application` 클래스를 활용하여 사각형 움직이기](#pixijsapplication-클래스를-활용하여-사각형-움직이기)
+      - [`addRect()`로 여러 사각형 만들어보기](#addrect로-여러-사각형-만들어보기)
 
 ## 1차시
 
@@ -444,3 +445,28 @@ createRoot(document.getElementById('root')!).render(
   - *조건1.* 함수의 **파라미터**는 `label:string`, `x:number`, `y:number`로 *label*은 이동시킬 사각형의 label, *x*는 x축으로 이동할 픽셀 수, *y*는 y축으로 이동할 픽셀 수를 의미한다.
   - *조건2.* `pixiApp.stage.getChildByLabel(label)`에서 label을 찾지 못할 경우 null 또는 undefine,false 값을 반환한다. 이 경우 `console.log()`로 오류 메시지를 콘솔 창에 띄우고, 함수를 즉시 `return`하는 로직을 추가하시오.
 - **심화문제** `pixiApp.stage.children`은 stage에 있는 child를 담고 있는 배열이다. *연습문제*에서 만든 `moveRect()` 함수와 `Array.forEach()`구문을 활용하여 `console.log()`로 각 child의 label을 콘솔에 출력한 다음, *x축*으로 `10px`씩 이동 시키시오.
+
+#### `addRect()`로 여러 사각형 만들어보기
+
+- `useCallback()` 훅을 이용한다.
+- 코드 예시
+
+  ```tsx
+    const addRect = useCallback(
+      ( 
+        label: string,
+        x: number,
+        y: number,
+        width: number,
+        height: number,
+        color: number,
+      )=>{
+        const rect = new PixiJs.Graphics()
+          .rect(0, 0, width, height)
+          .fill(color);
+        rect.x = x;
+        rect.y = y;
+        rect.label = label;
+      }
+      ,[]);
+  ```
