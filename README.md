@@ -449,24 +449,28 @@ createRoot(document.getElementById('root')!).render(
 #### `addRect()`로 여러 사각형 만들어보기
 
 - `useCallback()` 훅을 이용한다.
-- 코드 예시
+- `addRect()` 함수 예시
 
   ```tsx
+    const pixiApp = useMemo(() => new PixiJs.Application(), []);
+
     const addRect = useCallback(
-      ( 
-        label: string,
-        x: number,
-        y: number,
-        width: number,
-        height: number,
-        color: number,
-      )=>{
-        const rect = new PixiJs.Graphics()
-          .rect(0, 0, width, height)
-          .fill(color);
-        rect.x = x;
-        rect.y = y;
-        rect.label = label;
-      }
-      ,[]);
+        ( 
+          label: string,
+          x: number,
+          y: number,
+          width: number,
+          height: number,
+          color: number,
+        ) => {
+          const rect = new PixiJs.Graphics()
+            .rect(0, 0, width, height)
+            .fill(color);
+          rect.x = x;
+          rect.y = y;
+          rect.label = label;
+          pixiApp.stage.addChild(rect);
+        },
+        [pixiApp]
+      );
   ```
