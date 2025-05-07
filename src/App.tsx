@@ -64,11 +64,10 @@ const App = () => {
   useLayoutEffect(() => {
     initPixi();
   }, [initPixi]);
-
-  // 키보드 이벤트 핸들러 추가: 화살표 키에 따라서 이동
-  useLayoutEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
+  const handleKeyDown = useCallback(
+    (event: KeyboardEvent) => {
       // selectedRect 설정(label로 찾기)
+
       const selectedRect = pixiApp.stage.getChildByLabel(rectSelect.toString());
       if (!selectedRect) return;
       // 한 번의 키 입력마다 이동할 픽셀 양
@@ -94,13 +93,16 @@ const App = () => {
         default:
           break;
       }
-    };
-
+    },
+    [pixiApp.stage, rectSelect]
+  );
+  // 키보드 이벤트 핸들러 추가: 화살표 키에 따라서 이동
+  useLayoutEffect(() => {
     window.addEventListener("keydown", handleKeyDown);
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [rectSelect, pixiApp.stage]);
+  }, [handleKeyDown]);
   return (
     <>
       <h2>Pixi.js 연습하기</h2>

@@ -22,6 +22,8 @@
       - [사각형 추가하는 함수 만들기](#사각형-추가하는-함수-만들기)
       - [`PixiJs.Application` 클래스를 활용하여 사각형 움직이기](#pixijsapplication-클래스를-활용하여-사각형-움직이기)
       - [`addRect()`로 여러 사각형 만들어보기](#addrect로-여러-사각형-만들어보기)
+      - [키보드 이벤트 넣기](#키보드-이벤트-넣기)
+      - [`switch` 문을 활용한 키보드 이벤트](#switch-문을-활용한-키보드-이벤트)
 
 ## 1차시
 
@@ -473,4 +475,64 @@ createRoot(document.getElementById('root')!).render(
         },
         [pixiApp]
       );
+  ```
+
+#### 키보드 이벤트 넣기
+
+- React에서 키보드 이벤트는 `useEffect()` 또는 `useLayoutEffect()` 훅을 활용한다.
+- `useCallback()` 훅으로 `handleKeyDown()` 함수 만들기
+
+  ```tsx
+    useCallback(
+      (event: KeyboardEvent) => { 
+        const key = event.key;
+        console.log(key);
+      },
+      []
+    )
+  ```
+
+- `useLayoutEffect()`로 키보드 이벤트 넣기
+
+  ```tsx
+    useLayoutEffect(() => {
+      // 컴포넌트가 로드될 때 키보드 이벤트 리스너를 추가
+
+      window.addEventListener("keydown", handleKeyDown);
+
+      // 컴포넌트가 제거될 때 키보드 이벤트 리스너를 제거
+      return () => {
+        window.removeEventListener("keydown", handleKeyDown);
+      };
+    }, [handleKeyDown]);
+  ```
+
+- **연습문제**
+  1. `if` 문을 활용하여 아래의 조건을 충족하는 `handleKeyDown()` 함수를 완성하시오
+  1. 방향키를 눌렸을 때 `console.log("방향키 눌림")`함수를 실행
+  1. <kbd>alt</kbd>와 <kbd>a</kbd>가 동시에 눌리는 경우 `console.log("alt + a")`함수를 실행
+  1. <(`const event = keyboardEvent`인 경우`event.altKey`의 값이 `true`가 됨)
+
+#### `switch` 문을 활용한 키보드 이벤트
+
+- `switch`문은 `if`문과 유사한데 `input`이 `case 조건 :`의 조건과 일치할 때 실행된다.
+- `switch`문은 `case 조건 :`이 일치하더라도 `break`가 없다면 다음 `case`도 실행한다.
+- `default:`는 일치하는 `case`가 없을 때 실행된다.
+- 예시
+
+  ```tsx
+  const myNumber = 3
+  switch(guess){
+    case 1: 
+      console.log("1입니다.");
+
+    case 3: 
+      console.log("3입니다.");
+    // 아래 break를 주석 처리하면 default의 코드도 실행된다.
+    break;
+
+    default: 
+      console.log("switch문 종료합니다.");
+      break;
+  }
   ```
