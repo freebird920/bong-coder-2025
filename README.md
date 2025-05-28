@@ -4,6 +4,12 @@
 [**예제 보기**(https://bong-coder-2025.pages.dev/)](https://bong-coder-2025.pages.dev/)
 
 - [봉우리코더 2025](#봉우리코더-2025)
+  - [2025년 5월 28일](#2025년-5월-28일)
+    - [목표](#목표)
+    - [준비하기](#준비하기)
+    - [REACT](#react)
+      - [`/src/main.tsx` 세팅](#srcmaintsx-세팅)
+      - [`/src/App.tsx`](#srcapptsx)
   - [1차시](#1차시)
     - [React 프로젝트 생성](#react-프로젝트-생성)
     - [Cloudflare로 정적 페이지 배포](#cloudflare로-정적-페이지-배포)
@@ -24,6 +30,271 @@
       - [`addRect()`로 여러 사각형 만들어보기](#addrect로-여러-사각형-만들어보기)
       - [키보드 이벤트 넣기](#키보드-이벤트-넣기)
       - [`switch` 문을 활용한 키보드 이벤트](#switch-문을-활용한-키보드-이벤트)
+
+## 2025년 5월 28일
+
+### 목표
+
+- gemini api를 사용할 수 있다.
+- form data를 다룰 수 있다.
+- 도서 추천 서비스를 만든다.
+
+### 준비하기
+
+1. [GOOGLE AI STUDIO](https://aistudio.google.com/) 접속하기
+1. GOOGLE 계정으로 로그인
+1. [API key 발급받기](https://aistudio.google.com/app/apikey)
+1. vite 프로젝트 생성하기 [참고: React 프로젝트 생성](#react-프로젝트-생성)
+1. `npm install`하기
+  ```npm install```
+1. `gemini` 라이브러리 설치  
+  `npm install @google/genai`
+
+### REACT
+
+#### `/src/main.tsx` 세팅
+
+**StrictMode** 해제하기
+`<App/>`을 감싸고 있는 `<StrictMode>`를 제고합니다.
+
+```tsx
+// import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import "./index.css";
+import App from "./App";
+
+createRoot(document.getElementById("root")!).render(
+  // <StrictMode>
+  <App />
+  // </StrictMode>,
+);
+
+```
+
+#### `/src/App.tsx`
+
+- 빈 App 컴포넌트 만들기
+
+  ```tsx
+  const App = () => {
+    return <></>;
+  };
+  export default App;
+  ```
+
+- `apiKey` 입력 구현
+
+  ```tsx
+  import { FormEvent, useCallback, useState } from "react";
+  import { GoogleGenAI, HarmBlockThreshold, HarmCategory } from "@google/genai";
+  const App = () => {
+    const [apiKey, setApiKey] = useState<string>("");
+
+    // 이 함수가 form이 submit 되면 실행되는 함수다.
+    const handleApiKeyFormSubmit = useCallback(
+      
+      // form이 submit 되면 이 아래의 함수를 실행한다. event 객체는 자동으로 전달된다.
+      // 전달되는 event 객체는 FormEvent<HTMLFormElement> 타입인데 FormEvent까지 쓰고 ctrl + space를 누르면 뭐가 뜬다. 그거 클릭해서 import
+      (event: FormEvent<HTMLFormElement>) => {
+        // form이 submit 되면 원래 페이지 새로고침 되는데 아래 event.preventDefault()로 새로고침 안되게 한다.
+        event.preventDefault();
+
+        // formData 객체를 만든다. 여기에 form으로 전달되는 정보가 들어있다.
+        const formData = new FormData(event.currentTarget);
+
+        // formData.get("name")은 input 태그의 name이 get()안에 들어있는 것을 가져온다.
+        const apiKeyInput = formData.get("api-key-input");
+
+        // 에러 처리
+        // apiKeyInput이 string 타입이 아닌경우 처리(formData.get()은 string 말고도 blob이나 다른 타입일 수도 있으니깐 예외를 처리해준다.)
+        if (typeof apiKeyInput !== "string")
+          return console.error("APIKEY_NOT_STRING");
+        // apiKeyInput이 비어있는 경우도 처리해주자.
+        if (!apiKeyInput) return console.error("APIKEY_EMPTY");
+
+        // apiKey를 넣어주자.
+        return setApiKey(apiKeyInput);
+      },
+      []
+    );
+    return (
+      <div className="flex flex-col space-y-2 m-6">
+        {/* apiKey 입력 section */}
+        <section className="flex mx-auto space-x-2">
+          <form id="api-key-form" onSubmit={handleApiKeyFormSubmit}></form>
+          <input
+            className="px-2 rounded-md"
+            form="api-key-form"
+            type="text"
+            name="api-key-input"
+            placeholder="INSERT APIKEY"
+          ></input>
+          <button
+            className="border-2 rounded-md hover:bg-amber-500/20"
+            type="submit"
+            form="api-key-form"
+          >
+            apikey적용
+          </button>
+        </section>
+        {/* 정보페이지 */}
+        <section className="mx-auto flex-col">
+          <div>
+            <p>APIKEY: {apiKey}</p>
+          </div>
+        </section>
+      </div>
+    );
+  };
+  export default App;
+  ```
+
+- `gemini` 사용하기
+  - import
+  - 숙제: 아래 코드 다 복사해도 좋으니깐 코드 만들어서 GITHUB에 커밋 푸시 동기화 한 다음에 CLOUDFLARE에 배포되게 해서 클라우드플레어 페이지 링크 올리기
+  - 밑에 `please recommend a book for user.` 부분 찾아서 본인이 원하는 스타일로 gemini 설정해보기
+
+    ```tsx
+    import { FormEvent, useCallback, useState } from "react";
+    import { GoogleGenAI } from "@google/genai";
+
+    const tools = [{ googleSearch: {} }];
+    const config = {
+      thinkingConfig: {
+        thinkingBudget: 0,
+      },
+      tools,
+      responseMimeType: "text/plain",
+      systemInstruction: [
+        {
+          text: `please recommend a book for user.`,
+        },
+      ],
+    };
+    const model = "gemini-2.5-flash-preview-05-20";
+
+    const App = () => {
+      const [apiKey, setApiKey] = useState<string>("");
+      const [responseText, setResponseText] = useState<Array<string | undefined>>(
+        []
+      );
+      const runGemini = useCallback(
+        async (inputText: string) => {
+          const ai = new GoogleGenAI({
+            apiKey: apiKey,
+          });
+          const contents = [
+            {
+              role: "user",
+              parts: [
+                {
+                  text: inputText,
+                },
+              ],
+            },
+          ];
+          const response = await ai.models.generateContentStream({
+            model,
+            config,
+            contents,
+          });
+          // let fileIndex = 0;
+          const modelResponse: Array<string | undefined> = [];
+
+          for await (const chunk of response) {
+            console.log(chunk.text);
+            modelResponse.push(chunk.text);
+          }
+          setResponseText(modelResponse);
+        },
+        [apiKey]
+      );
+      const handleApiKeyFormSubmit = useCallback(
+        (event: FormEvent<HTMLFormElement>) => {
+          event.preventDefault();
+          const formData = new FormData(event.currentTarget);
+          const apiKeyInput = formData.get("api-key-input");
+          // 에러 처리
+          // apiKeyInput이 string 타입이 아닌경우
+          if (typeof apiKeyInput !== "string")
+            return console.error("APIKEY_NOT_STRING");
+          // apiKeyInput이 비어있는 경우
+          if (!apiKeyInput) return console.error("APIKEY_EMPTY");
+          return setApiKey(apiKeyInput);
+        },
+        []
+      );
+      const handleGeminiFormSubmit = useCallback(
+        async (event: FormEvent<HTMLFormElement>) => {
+          event.preventDefault();
+          const formData = new FormData(event.currentTarget);
+          const userInput = formData.get("user-input");
+          // 에러 처리
+          // user-input string 타입이 아닌경우
+          if (typeof userInput !== "string")
+            return console.error("APIKEY_NOT_STRING");
+          // user-input 비어있는 경우
+          if (!userInput) return console.error("APIKEY_EMPTY");
+          return await runGemini(userInput);
+        },
+        [runGemini]
+      );
+      return (
+        <div className="flex flex-col space-y-2 m-6">
+          {/* apiKey 입력 section */}
+          <section className="flex mx-auto space-x-2">
+            <form id="api-key-form" onSubmit={handleApiKeyFormSubmit}></form>
+            <input
+              className="px-2 rounded-md"
+              form="api-key-form"
+              type="text"
+              name="api-key-input"
+              placeholder="INSERT APIKEY"
+            ></input>
+            <button
+              className="border-2 rounded-md hover:bg-amber-500/20"
+              type="submit"
+              form="api-key-form"
+            >
+              apikey적용
+            </button>
+          </section>
+          {/* 정보페이지 */}
+          <section className="mx-auto flex-col">
+            <div>
+              <p>APIKEY: {apiKey}</p>
+            </div>
+          </section>
+          {/* 텍스트 입력섹션 */}
+          <section className="mx-auto">
+            <form id="gemini-form" onSubmit={handleGeminiFormSubmit}></form>
+            <input
+              className="px-2 rounded-md"
+              form="gemini-form"
+              type="text"
+              name="user-input"
+              placeholder="INSERT MSG"
+            ></input>
+            <button
+              className="border-2 rounded-md hover:bg-amber-500/20"
+              type="submit"
+              form="gemini-form"
+            >
+              메시지 보내기
+            </button>
+          </section>
+          {/* 응답 보여주는 섹션 */}
+          <section>
+            {responseText.map((text, index) => {
+              return <p key={index}>{text}</p>;
+            })}
+          </section>
+        </div>
+      );
+    };
+      export default App;
+
+    ```
 
 ## 1차시
 

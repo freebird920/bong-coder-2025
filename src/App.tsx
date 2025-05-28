@@ -1,152 +1,138 @@
-import {
-  CSSProperties,
-  useCallback,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-import * as PixiJs from "pixi.js";
-const App = () => {
-  // useRef()
-  const canvasDivRef = useRef<HTMLDivElement>(null);
-  // useState
-  const [, setForceRender] = useState({});
-  const [rectSelect, setRectSelect] = useState(0);
-  const [rectIndex, setRectIndex] = useState<number>(0);
-  // useMemo()
-  const pixiApp = useMemo(() => new PixiJs.Application(), []);
-  const canvasDivStyle = useMemo<CSSProperties>(() => {
-    return { width: 800, height: 600 };
-  }, []);
+import { FormEvent, useCallback, useState } from "react";
+import { GoogleGenAI } from "@google/genai";
 
-  // useCallback
-  const initPixi = useCallback(async () => {
-    if (!canvasDivRef.current) return;
-    await pixiApp.init({
-      resizeTo: canvasDivRef.current,
-      background: "#F0F0F0",
-    });
-    pixiApp.stage.sortableChildren = true;
-
-    canvasDivRef.current.appendChild(pixiApp.canvas);
-  }, [pixiApp]);
-
-  const getSecureRandomNumber = useCallback((max: number) => {
-    // 32비트 정수 하나를 저장할 배열 생성
-    const array = new Uint32Array(1);
-    // 암호학적으로 안전한 난수를 배열에 채운다.
-    window.crypto.getRandomValues(array);
-    // 0 ~ 2³²-1 (4294967295) 사이의 값을 0~1 사이의 실수로 변환
-    const fraction = array[0] / 4294967296; // 4294967296는 2^32
-    // 이 실수를 0~100 범위로 조정하여 정수로 변환 (0부터 100까지 포함)
-    return Math.floor(fraction * (max + 1));
-  }, []);
-  const addRect = useCallback(() => {
-    //
-    const rect = new PixiJs.Graphics()
-      .rect(0, 0, getSecureRandomNumber(255), getSecureRandomNumber(255))
-      .fill(getSecureRandomNumber(0xffffff));
-    rect.x = getSecureRandomNumber(800);
-    rect.y = getSecureRandomNumber(600);
-
-    rect.label = rectIndex.toString();
-    setRectIndex((prev) => prev + 1);
-    rect.on("pointertap", () => {
-      console.log(rect.label, rect.x, rect.y);
-    });
-    rect.eventMode = "dynamic";
-    setForceRender({});
-    pixiApp.stage.addChild(rect);
-  }, [pixiApp.stage, getSecureRandomNumber, rectIndex]);
-
-  // useLayoutEffect
-  useLayoutEffect(() => {
-    initPixi();
-  }, [initPixi]);
-  const handleKeyDown = useCallback(
-    (event: KeyboardEvent) => {
-      // selectedRect 설정(label로 찾기)
-
-      const selectedRect = pixiApp.stage.getChildByLabel(rectSelect.toString());
-      if (!selectedRect) return;
-      // 한 번의 키 입력마다 이동할 픽셀 양
-      const speed = 10;
-
-      switch (event.key) {
-        case "ArrowUp":
-          event.preventDefault();
-          selectedRect.y -= speed;
-          break;
-        case "ArrowDown":
-          event.preventDefault();
-          selectedRect.y += speed;
-          break;
-        case "ArrowLeft":
-          event.preventDefault();
-          selectedRect.x -= speed;
-          break;
-        case "ArrowRight":
-          event.preventDefault();
-          selectedRect.x += speed;
-          break;
-        default:
-          break;
-      }
+const tools = [{ googleSearch: {} }];
+const config = {
+  thinkingConfig: {
+    thinkingBudget: 0,
+  },
+  tools,
+  responseMimeType: "text/plain",
+  systemInstruction: [
+    {
+      text: `please recommend a book for user.`,
     },
-    [pixiApp.stage, rectSelect]
-  );
-  // 키보드 이벤트 핸들러 추가: 화살표 키에 따라서 이동
-  useLayoutEffect(() => {
-    window.addEventListener("keydown", handleKeyDown);
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [handleKeyDown]);
-  return (
-    <>
-      <h2>Pixi.js 연습하기</h2>
-      <div style={canvasDivStyle} ref={canvasDivRef}></div>
-      <section className="select-none">
-        <h3>사각형 선택창</h3>
-        <form></form>
-        <p>{rectIndex}</p>
-        <button
-          className="border-2 rounded-md p-2"
-          onClick={() => {
-            // console.log(pixiApp.stage.children);
+  ],
+};
+const model = "gemini-2.5-flash-preview-05-20";
 
-            // 또는 각 객체를 하나씩 확인하려면
-            pixiApp.stage.children.forEach((child, index) => {
-              console.log(`child ${index}:`, child.x, child.y);
-            });
-          }}
+const App = () => {
+  const [apiKey, setApiKey] = useState<string>("");
+  const [responseText, setResponseText] = useState<Array<string | undefined>>(
+    []
+  );
+  const runGemini = useCallback(
+    async (inputText: string) => {
+      const ai = new GoogleGenAI({
+        apiKey: apiKey,
+      });
+      const contents = [
+        {
+          role: "user",
+          parts: [
+            {
+              text: inputText,
+            },
+          ],
+        },
+      ];
+      const response = await ai.models.generateContentStream({
+        model,
+        config,
+        contents,
+      });
+      // let fileIndex = 0;
+      const modelResponse: Array<string | undefined> = [];
+
+      for await (const chunk of response) {
+        console.log(chunk.text);
+        modelResponse.push(chunk.text);
+      }
+      setResponseText(modelResponse);
+    },
+    [apiKey]
+  );
+  const handleApiKeyFormSubmit = useCallback(
+    (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      const formData = new FormData(event.currentTarget);
+      const apiKeyInput = formData.get("api-key-input");
+      // 에러 처리
+      // apiKeyInput이 string 타입이 아닌경우
+      if (typeof apiKeyInput !== "string")
+        return console.error("APIKEY_NOT_STRING");
+      // apiKeyInput이 비어있는 경우
+      if (!apiKeyInput) return console.error("APIKEY_EMPTY");
+      return setApiKey(apiKeyInput);
+    },
+    []
+  );
+  const handleGeminiFormSubmit = useCallback(
+    async (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      const formData = new FormData(event.currentTarget);
+      const userInput = formData.get("user-input");
+      // 에러 처리
+      // user-input string 타입이 아닌경우
+      if (typeof userInput !== "string")
+        return console.error("APIKEY_NOT_STRING");
+      // user-input 비어있는 경우
+      if (!userInput) return console.error("APIKEY_EMPTY");
+      return await runGemini(userInput);
+    },
+    [runGemini]
+  );
+  return (
+    <div className="flex flex-col space-y-2 m-6">
+      {/* apiKey 입력 section */}
+      <section className="flex mx-auto space-x-2">
+        <form id="api-key-form" onSubmit={handleApiKeyFormSubmit}></form>
+        <input
+          className="px-2 rounded-md"
+          form="api-key-form"
+          type="text"
+          name="api-key-input"
+          placeholder="INSERT APIKEY"
+        ></input>
+        <button
+          className="border-2 rounded-md hover:bg-amber-500/20"
+          type="submit"
+          form="api-key-form"
         >
-          눌리면 객체 확인하는 ㅂㅌ
+          apikey적용
         </button>
-        <button className="border-2 rounded-md p-2" onClick={addRect}>
-          눌리면 사각형 새로 생기는 ㅂㅌ입니다?!
-        </button>
-        <ul className="space-y-2">
-          {pixiApp.stage.children.map((child, index) => {
-            return (
-              <li
-                className={`${
-                  index === rectSelect ? "font-bold bg-amber-500/20" : ""
-                } border-2 rounded-md p-2 text-center`}
-                key={`rect-ref-${index}`}
-                onClick={() => {
-                  setRectSelect(index);
-                }}
-              >
-                {child.label}
-              </li>
-            );
-          })}
-        </ul>
-        <div></div>
       </section>
-    </>
+      {/* 정보페이지 */}
+      <section className="mx-auto flex-col">
+        <div>
+          <p>APIKEY: {apiKey}</p>
+        </div>
+      </section>
+      {/* 텍스트 입력섹션 */}
+      <section className="mx-auto">
+        <form id="gemini-form" onSubmit={handleGeminiFormSubmit}></form>
+        <input
+          className="px-2 rounded-md"
+          form="gemini-form"
+          type="text"
+          name="user-input"
+          placeholder="INSERT MSG"
+        ></input>
+        <button
+          className="border-2 rounded-md hover:bg-amber-500/20"
+          type="submit"
+          form="gemini-form"
+        >
+          메시지 보내기
+        </button>
+      </section>
+      {/* 응답 보여주는 섹션 */}
+      <section>
+        {responseText.map((text, index) => {
+          return <p key={index}>{text}</p>;
+        })}
+      </section>
+    </div>
   );
 };
 export default App;
